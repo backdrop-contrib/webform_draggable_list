@@ -80,7 +80,7 @@ function _webform_tabledrag_expand_tabledrag(&$tabledrag, $component, $value) {
         '#attributes' => array('class' => array("my-weight-{$component['form_key']}")),
       );
       if (!empty($value)) {
-        $tabledrag[$key]['#value'] = $value[$key];
+        $tabledrag[$key]['#default_value'] = $value[$key];
         //put the list in the right order.
         $tabledrag[$key]['#weight'] = $value[$key];
       }
@@ -249,8 +249,7 @@ function _webform_table_tabledrag($component, $value) {
   if (is_array($value)) {
     foreach ($value as $item => $value) {
       if ($value !== '') {
-        $output .= t('Row') . ': ' . _webform_filter_xss($rows[$item]) . '<br />';
-        $output .= t('Weight') . ': ' . _webform_filter_xss($value) . '<br />' . '<br />';
+        $output .= _webform_filter_xss($rows[$item]) . '<br />';
       }
     }
   }
