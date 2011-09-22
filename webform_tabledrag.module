@@ -6,7 +6,6 @@
  */
 // Tabledrag depends on functions provided by select.
 webform_component_include('select');
-dpm($_POST);
 /**
  * Implements hook_webform_component_info().
  */
@@ -57,13 +56,35 @@ function _webform_render_tabledrag($component, $value = NULL) {
     '#theme' => array('tabledrag'),
     '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
     '#suffix' => '</div>',
+    '#rows' => _webform_select_options_from_text($component['extra']['rows']),
+    //set a marker for theme_tabledrag so the table is draggable
+    '#tabledrag_draggable' => TRUE,
   );
 
-  if (isset($value)) {
-    $form_item['#default_value'] = $value[0];
-  }
+  _webform_tabledrag_expand_tabledrag($form_item, $component, $value);
 
   return $form_item;
+}
+
+function _webform_tabledrag_expand_tabledrag(&$tabledrag, $component, $value) {
+  $weight = array(0);
+  for ($w = 0; $w < count($tabledrag['#rows']); $w++) {
+    $weight[$w] = $w;
+  }
+  foreach ($tabledrag['#rows'] as $key => $row) {
+    $tabledrag[$key] = array(
+      '#type' => 'select',
+      '#options' => $weight,
+      '#default_value' => 0,
+      '#title' => 'Weight',
+      '#attributes' => array('class' => array("my-weight-{$component['form_key']}")),
+    );
+    if (!empty($value)) {
+      $tabledrag[$key]['#value'] = $value[$key];
+      //put the list in the right order.
+      $tabledrag[$key]['#weight'] = $value[$key];
+    }
+  }
 }
 
 /**
@@ -78,12 +99,14 @@ function _webform_theme_tabledrag() {
 }
 
 function theme_tabledrag($variables) {
-  $rows = $variables['element']['#webform_component']['extra']['rows'];
-  $rows = _webform_select_options_from_text($rows);
+  $form = $variables['element'];
+  $rows = $form['#rows'];
+  $draggable = $form['#tabledrag_draggable'];
   $i = 0;
   $el_id = $variables['element']['#id'];
   $table_rows = array();
-  foreach ($rows as $key => $row) {
+  foreach(element_children($form) as $key) {
+    $row = $rows[$key];
     $this_row = array();
     $item = array(
       "item$i" => array(
@@ -91,22 +114,16 @@ function theme_tabledrag($variables) {
       ),
     );
     $this_row[] = array('data' => drupal_render($item));
-    $weight = array(
-      "item-weight$i" => array(
-        '#name' => "item-weight$i",
-        '#type' => 'select',
-        '#options' => drupal_map_assoc(array(0, 1, 2)),
-        '#default_value' => $i * 10,
-        '#title' => 'Weight',
-        '#attributes' => array('class' => array('my-weight')),
-      ),
-    );
-    $this_row[] = array('data' => drupal_render($weight));
+    if ($draggable) {
+      $this_row[] = array('data' => drupal_render($form[$key]));
+    }
 
     $table_rows[] = array('data' => $this_row, 'class'=> array('draggable'));
     $i++;
   }
-  drupal_add_tabledrag($el_id, 'order', 'sibling', 'my-weight');
+  if ($draggable) {
+    drupal_add_tabledrag($el_id, 'order', 'sibling', "my-weight-{$variables['element']['#webform_component']['form_key']}");
+  }
   $form = array(
     '#type' => 'markup',
     '#markup' => theme('table', array('rows' => $table_rows, 'attributes' => array('id' => $el_id))),
@@ -117,28 +134,43 @@ function theme_tabledrag($variables) {
 }
 
 /**
- * Implements _webform_submit_component().
- */
-function _webform_submit_tabledrag($component, $value) {
-  dpm($component);
-  dpm($value);
-}
-
-/**
  * Implements _webform_display_component().
  */
-function webform_display_tabledrag($component, $value, $format = 'html') {
-  return array(
+function _webform_display_tabledrag($component, $value, $format = 'html') {
+  $tabledrag = array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
+    '#description'   => _webform_filter_descriptions($component['extra']['description']),
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
     '#post_render' => array('webform_element_wrapper'),
-    '#field_prefix' => $component['extra']['field_prefix'],
-    '#field_suffix' => $component['extra']['field_suffix'],
-    '#component' => $component,
+    '#webform_component' => $component,
     '#format' => $format,
-    '#value' => isset($value[0]) ? $value[0] : '',
+    '#rows' => _webform_select_options_from_text($component['extra']['rows']),
   );
+  if ($format == 'html') {
+    $tabledrag +=  array(
+      //set a marker for theme_tabledrag so the display isn't draggable
+      '#tabledrag_draggable' => FALSE,
+      '#theme' => array('tabledrag'),
+    );
+
+    _webform_tabledrag_expand_tabledrag($tabledrag, $component, $value);
+  }
+  else {
+    asort($value, SORT_NUMERIC);
+    $items = array();
+    if(!empty($value)) {
+      foreach($value as $key => $val) {
+        $items[] = "-{$tabledrag['#rows'][$key]}: {$val}";
+      }
+    }
+    $tabledrag += array(
+      '#type' => 'item',
+      '#markup' => implode("\n", $items),
+    );
+  }
+  
+  return $tabledrag;
 }
 
 /**
@@ -157,4 +189,113 @@ function _webform_edit_tabledrag($component) {
     '#wysiwyg' => FALSE,
   );
   return $form;
+}
+
+/**
+ * Implements _webform_analysis_component().
+ */
+function _webform_analysis_tabledrag($component, $sids = array()) {
+  // Generate the list of options and questions.
+  $tabledrag_rows = _webform_select_options_from_text($component['extra']['rows'], TRUE);
+
+  // Generate a lookup table of results.
+  $query = db_select('webform_submitted_data', 'wsd')
+    ->fields('wsd', array('no', 'data'))
+    ->condition('nid', $component['nid'])
+    ->condition('cid', $component['cid'])
+    ->condition('data', '', '<>')
+    ->groupBy('no')
+    ->groupBy('data');
+  $query->addExpression('COUNT(sid)', 'datacount');
+
+  if (count($sids)) {
+    $query->condition('sid', $sids, 'IN');
+  }
+
+  $result = $query->execute();
+  $counts = array();
+  $weights = array();
+  foreach ($result as $data) {
+    $counts[$data->no][$data->data] = $data->datacount;
+    $weights[$data->data] = $data->data;
+  }
+  ksort($weights);
+
+  // Create an entire table to be put into the returned row.
+  $rows = array();
+  $header = array('');
+  foreach($weights as $weight) {
+    $header[] = t('Weight: !weight', array('!weight' => $weight));
+  }
+  foreach ($tabledrag_rows as $tabledrag_rowkey => $tabledrag_row) {
+    $row = array(_webform_filter_xss($tabledrag_row));
+    foreach ($weights as $weight) {
+      $row[] = !empty($counts[$tabledrag_rowkey][$weight]) ? $counts[$tabledrag_rowkey][$weight] : 0;
+    }
+    $rows[] = $row;
+  }
+
+  $output = theme('table', array('header' => $header, 'rows' => $rows, 'attributes' => array('class' => array('webform-grid'))));
+  return array(array(array('data' => $output, 'colspan' => 2)));
+}
+
+/**
+ * Implements _webform_table_component().
+ */
+function _webform_table_tabledrag($component, $value) {
+  $rows = _webform_select_options_from_text($component['extra']['rows'], TRUE);
+  $output = '';
+  // Set the value as a single string.
+  if (is_array($value)) {
+    foreach ($value as $item => $value) {
+      if ($value !== '') {
+        $output .= t('Row') . ': ' . _webform_filter_xss($rows[$item]) . '<br />';
+        $output .= t('Weight') . ': ' . _webform_filter_xss($value) . '<br />' . '<br />';
+      }
+    }
+  }
+  else {
+    $output = !isset($value[0]) ? '' : _webform_filter_xss($value[0]);
+  }
+  return $output;
+}
+
+/**
+ * Implements _webform_csv_headers_component().
+ */
+function _webform_csv_headers_tabledrag($component, $export_options) {
+  $header = array();
+  $header[0] = array('');
+  $header[1] = array($component['name']);
+  $items = _webform_select_options_from_text($component['extra']['rows'], TRUE);
+  $count = 0;
+  foreach ($items as $key => $item) {
+    // Empty column per sub-field in main header.
+    if ($count != 0) {
+      $header[0][] = '';
+      $header[1][] = '';
+    }
+    // The value for this option.
+    $header[2][] = $item;
+    $count++;
+  }
+
+  return $header;
+}
+
+/**
+ * Implements _webform_csv_data_component().
+ */
+function _webform_csv_data_tabledrag($component, $export_options, $value) {
+  $rows = _webform_select_options_from_text($component['extra']['rows'], TRUE);
+  $return = array();
+  foreach ($rows as $key => $row) {
+    if (isset($value[$key])) {
+      $return[] = $value[$key];
+    }
+    else {
+      $return[] = '';
+    }
+  }
+  return $return;
 }
