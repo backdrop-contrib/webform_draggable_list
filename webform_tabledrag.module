@@ -1,5 +1,4 @@
 <?php
-// $Id$
 /**
  * @file
  *
@@ -105,7 +104,7 @@ function theme_tabledrag($variables) {
   $i = 0;
   $el_id = $variables['element']['#id'];
   $table_rows = array();
-  foreach(element_children($form) as $key) {
+  foreach (element_children($form) as $key) {
     $row = $rows[$key];
     $this_row = array();
     $item = array(
@@ -118,7 +117,7 @@ function theme_tabledrag($variables) {
       $this_row[] = array('data' => drupal_render($form[$key]));
     }
 
-    $table_rows[] = array('data' => $this_row, 'class'=> array('draggable'));
+    $table_rows[] = array('data' => $this_row, 'class' => array('draggable'));
     $i++;
   }
   if ($draggable) {
@@ -159,8 +158,8 @@ function _webform_display_tabledrag($component, $value, $format = 'html') {
   else {
     asort($value, SORT_NUMERIC);
     $items = array();
-    if(!empty($value)) {
-      foreach($value as $key => $val) {
+    if (!empty($value)) {
+      foreach ($value as $key => $val) {
         $items[] = "-{$tabledrag['#rows'][$key]}: {$val}";
       }
     }
@@ -169,7 +168,6 @@ function _webform_display_tabledrag($component, $value, $format = 'html') {
       '#markup' => implode("\n", $items),
     );
   }
-  
   return $tabledrag;
 }
 
@@ -224,7 +222,7 @@ function _webform_analysis_tabledrag($component, $sids = array()) {
   // Create an entire table to be put into the returned row.
   $rows = array();
   $header = array('');
-  foreach($weights as $weight) {
+  foreach ($weights as $weight) {
     $header[] = t('Weight: !weight', array('!weight' => $weight));
   }
   foreach ($tabledrag_rows as $tabledrag_rowkey => $tabledrag_row) {
