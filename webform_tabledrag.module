@@ -1,0 +1,158 @@
+<?php
+// $Id$
+/**
+ * @file
+ *
+ */
+// Tabledrag depends on functions provided by select.
+webform_component_include('select');
+dpm($_POST);
+/**
+ * Implements hook_webform_component_info().
+ */
+function webform_tabledrag_webform_component_info() {
+  $components = array();
+
+  $components['tabledrag'] = array(
+    'label' => t('Table drag'),
+    'description' => t('Allow users to order a list with drag and drop and save the order'),
+    'features' => array(
+      'required' => FALSE,
+    )
+  );
+  return $components;
+}
+
+/**
+ * Implements _webform_default_component().
+ */
+function _webform_defaults_tabledrag() {
+  return array(
+    'name' => '',
+    'form_key' => NULL,
+    'mandatory' => 0,
+    'pid' => 0,
+    'weight' => 0,
+    'extra' => array(
+      'rows' => '',
+      'title_display' => 0,
+      'description' => '',
+      'private' => 0,
+    ),
+  );
+}
+
+/**
+ * Implements _webform_render_component().
+ */
+function _webform_render_tabledrag($component, $value = NULL) {
+  $form_item = array(
+    '#type' => 'tabledrag',
+    '#title' => _webform_filter_xss($component['name']),
+    '#weight' => $component['weight'],
+    '#webform_component' => $component,
+    '#description'   => _webform_filter_descriptions($component['extra']['description']),
+    '#default_value' => _webform_filter_values($component['value']),
+    '#theme_wrappers' => array('webform_element'),
+    '#theme' => array('tabledrag'),
+    '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-' . $component['form_key'] . '">',
+    '#suffix' => '</div>',
+  );
+
+  if (isset($value)) {
+    $form_item['#default_value'] = $value[0];
+  }
+
+  return $form_item;
+}
+
+/**
+ * Implements _webform_theme_component
+ */
+function _webform_theme_tabledrag() {
+  return array(
+    'tabledrag' => array(
+      'render element' => 'element',
+    ),
+  );
+}
+
+function theme_tabledrag($variables) {
+  $rows = $variables['element']['#webform_component']['extra']['rows'];
+  $rows = _webform_select_options_from_text($rows);
+  $i = 0;
+  $el_id = $variables['element']['#id'];
+  $table_rows = array();
+  foreach ($rows as $key => $row) {
+    $this_row = array();
+    $item = array(
+      "item$i" => array(
+        '#markup' => $row,
+      ),
+    );
+    $this_row[] = array('data' => drupal_render($item));
+    $weight = array(
+      "item-weight$i" => array(
+        '#name' => "item-weight$i",
+        '#type' => 'select',
+        '#options' => drupal_map_assoc(array(0, 1, 2)),
+        '#default_value' => $i * 10,
+        '#title' => 'Weight',
+      ),
+    );
+    $this_row[] = array('data' => drupal_render($weight), 'class' => array('weight'));
+
+    $table_rows[] = array('data' => $this_row, 'class'=> array('draggable'));
+  }
+  drupal_add_tabledrag($el_id, 'order', 'sibling', 'weight');
+  $form = array(
+    '#type' => 'markup',
+    '#markup' => theme('table', array('rows' => $table_rows, 'attributes' => array('id' => $el_id))),
+    '#weight' => '1',
+  );
+  $output = drupal_render($form);
+  return $output;
+}
+
+/**
+ * Implements _webform_submit_component().
+ */
+function _webform_submit_tabledrag($component, $value) {
+  dpm($component);
+  dpm($value);
+}
+
+/**
+ * Implements _webform_display_component().
+ */
+function webform_display_tabledrag($component, $value, $format = 'html') {
+  return array(
+    '#title' => $component['name'],
+    '#weight' => $component['weight'],
+    '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
+    '#post_render' => array('webform_element_wrapper'),
+    '#field_prefix' => $component['extra']['field_prefix'],
+    '#field_suffix' => $component['extra']['field_suffix'],
+    '#component' => $component,
+    '#format' => $format,
+    '#value' => isset($value[0]) ? $value[0] : '',
+  );
+}
+
+/**
+ * Implements _webform_edit_component().
+ */
+function _webform_edit_tabledrag($component) {
+  $form['extra']['rows'] = array(
+    '#type' => 'textarea',
+    '#title' => t('Rows'),
+    '#default_value' => $component['extra']['rows'],
+    '#description' => t('Values of the list item. One row per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>') . theme('webform_token_help'),
+    '#cols' => 60,
+    '#rows' => 5,
+    '#weight' => -2,
+    '#required' => TRUE,
+    '#wysiwyg' => FALSE,
+  );
+  return $form;
+}
