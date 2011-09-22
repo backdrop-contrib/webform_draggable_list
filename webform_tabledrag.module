@@ -3,8 +3,10 @@
  * @file
  *
  */
+
 // Tabledrag depends on functions provided by select.
 webform_component_include('select');
+
 /**
  * Implements hook_webform_component_info().
  */
@@ -66,22 +68,22 @@ function _webform_render_tabledrag($component, $value = NULL) {
 }
 
 function _webform_tabledrag_expand_tabledrag(&$tabledrag, $component, $value) {
-  $weight = array(0);
-  for ($w = 0; $w < count($tabledrag['#rows']); $w++) {
-    $weight[$w] = $w;
-  }
-  foreach ($tabledrag['#rows'] as $key => $row) {
-    $tabledrag[$key] = array(
-      '#type' => 'select',
-      '#options' => $weight,
-      '#default_value' => 0,
-      '#title' => 'Weight',
-      '#attributes' => array('class' => array("my-weight-{$component['form_key']}")),
-    );
-    if (!empty($value)) {
-      $tabledrag[$key]['#value'] = $value[$key];
-      //put the list in the right order.
-      $tabledrag[$key]['#weight'] = $value[$key];
+  if (count($tabledrag['#rows'])) {
+    $weight = range(0, count($tabledrag['#rows']) - 1, 1);
+
+    foreach ($tabledrag['#rows'] as $key => $row) {
+      $tabledrag[$key] = array(
+        '#type' => 'select',
+        '#options' => $weight,
+        '#default_value' => 0,
+        '#title' => 'Weight',
+        '#attributes' => array('class' => array("my-weight-{$component['form_key']}")),
+      );
+      if (!empty($value)) {
+        $tabledrag[$key]['#value'] = $value[$key];
+        //put the list in the right order.
+        $tabledrag[$key]['#weight'] = $value[$key];
+      }
     }
   }
 }
@@ -102,7 +104,7 @@ function theme_tabledrag($variables) {
   $rows = $form['#rows'];
   $draggable = $form['#tabledrag_draggable'];
   $i = 0;
-  $el_id = $variables['element']['#id'];
+  $element_id = $variables['element']['#id'];
   $table_rows = array();
   foreach (element_children($form) as $key) {
     $row = $rows[$key];
@@ -121,11 +123,11 @@ function theme_tabledrag($variables) {
     $i++;
   }
   if ($draggable) {
-    drupal_add_tabledrag($el_id, 'order', 'sibling', "my-weight-{$variables['element']['#webform_component']['form_key']}");
+    drupal_add_tabledrag($element_id, 'order', 'sibling', "my-weight-{$variables['element']['#webform_component']['form_key']}");
   }
   $form = array(
     '#type' => 'markup',
-    '#markup' => theme('table', array('rows' => $table_rows, 'attributes' => array('id' => $el_id))),
+    '#markup' => theme('table', array('rows' => $table_rows, 'attributes' => array('id' => $element_id))),
     '#weight' => '1',
   );
   $output = drupal_render($form);
