@@ -98,13 +98,15 @@ function theme_tabledrag($variables) {
         '#options' => drupal_map_assoc(array(0, 1, 2)),
         '#default_value' => $i * 10,
         '#title' => 'Weight',
+        '#attributes' => array('class' => array('my-weight')),
       ),
     );
-    $this_row[] = array('data' => drupal_render($weight), 'class' => array('weight'));
+    $this_row[] = array('data' => drupal_render($weight));
 
     $table_rows[] = array('data' => $this_row, 'class'=> array('draggable'));
+    $i++;
   }
-  drupal_add_tabledrag($el_id, 'order', 'sibling', 'weight');
+  drupal_add_tabledrag($el_id, 'order', 'sibling', 'my-weight');
   $form = array(
     '#type' => 'markup',
     '#markup' => theme('table', array('rows' => $table_rows, 'attributes' => array('id' => $el_id))),
