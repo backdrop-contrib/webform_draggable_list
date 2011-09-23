@@ -1,7 +1,0 @@
-; $Id: 
-name = Webform table element
-description = Tabledrag element for the webform module. Allow users to order a list with drag and drop and save the order.
-core = 7.x
-package = Webform
-
-dependencies[] = webform
