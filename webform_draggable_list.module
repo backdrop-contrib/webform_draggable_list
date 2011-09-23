@@ -47,14 +47,14 @@ function _webform_defaults_draggable_list() {
 /**
  * Implements _webform_render_component().
  */
-function _webform_render_draggable_list($component, $value = NULL) {
+function _webform_render_draggable_list($component, $value = NULL, $filter = TRUE) {
   $form_item = array(
     '#type' => 'draggable_list',
-    '#title' => _webform_filter_xss($component['name']),
+    '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#weight' => $component['weight'],
     '#webform_component' => $component,
-    '#description'   => _webform_filter_descriptions($component['extra']['description']),
-    '#default_value' => _webform_filter_values($component['value']),
+    '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
+    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#theme_wrappers' => array('webform_element'),
     '#theme' => array('draggable_list'),
     '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-draggable-list-' . $component['form_key'] . '-wrapper">',
