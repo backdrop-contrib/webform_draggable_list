@@ -1,0 +1,8 @@
+; $Id: 
+name = Webform draggable list Form Builder support
+description = Add form builder support for draggable list element for the webform module.
+core = 7.x
+package = Webform
+
+dependencies[] = webform
+dependencies[] = form_builder_webform
