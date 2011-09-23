@@ -40,6 +40,7 @@ function _webform_defaults_draggable_list() {
       'private' => 0,
       'hide_toggle' => 0,
       'hide_message' => 0,
+      'custom_row_keys' => 0,
     ),
   );
 }
@@ -188,18 +189,39 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
  * Implements _webform_edit_component().
  */
 function _webform_edit_draggable_list($component) {
-  $form['extra']['rows'] = array(
-    '#type' => 'textarea',
-    '#title' => t('Rows'),
-    '#default_value' => $component['extra']['rows'],
-    '#description' => t('Values of the list item. One row per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>') . theme('webform_token_help'),
-    '#cols' => 60,
-    '#rows' => 5,
-    '#weight' => -2,
-    '#required' => TRUE,
-    '#wysiwyg' => FALSE,
-    '#element_validate' => array('_webform_edit_validate_select'),
-  );
+  if (module_exists('options_element')) {
+    $form['rows'] = array(
+      '#type' => 'fieldset',
+      '#title' => t('Rows'),
+      '#collapsible' => TRUE,
+      '#description' => t('Values of the list item. One value per line.'),
+      '#attributes' => array('class' => array('webform-options-element')),
+      '#element_validate' => array('_webform_edit_validate_options'),
+    );
+    $form['rows']['options'] = array(
+      '#type' => 'options',
+      '#options' => _webform_select_options_from_text($component['extra']['rows'], TRUE),
+      '#optgroups' => FALSE,
+      '#default_value' => FALSE,
+      '#key_type' => 'mixed',
+      '#key_type_toggle' => t('Customize row keys (Advanced)'),
+      '#key_type_toggled' => $component['extra']['custom_row_keys'],
+    );
+  }
+  else {
+    $form['extra']['rows'] = array(
+      '#type' => 'textarea',
+      '#title' => t('Items'),
+      '#default_value' => $component['extra']['rows'],
+      '#description' => t('Values of the list item. One row per line. <strong>Key-value pairs MUST be specified as "safe_key|Some readable option"</strong>') . theme('webform_token_help'),
+      '#cols' => 60,
+      '#rows' => 5,
+      '#weight' => -2,
+      '#required' => TRUE,
+      '#wysiwyg' => FALSE,
+      '#element_validate' => array('_webform_edit_validate_select'),
+    );
+  }
 
   $form['extra']['hide_toggle'] = array(
     '#type' => 'checkbox',
