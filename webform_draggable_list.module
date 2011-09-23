@@ -200,7 +200,7 @@ function _webform_edit_draggable_list($component) {
     '#wysiwyg' => FALSE,
     '#element_validate' => array('_webform_edit_validate_select'),
   );
-  
+
   $form['extra']['hide_toggle'] = array(
     '#type' => 'checkbox',
     '#title' => t('Hide toggle row weights link'),
