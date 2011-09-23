@@ -69,21 +69,23 @@ function _webform_render_tabledrag($component, $value = NULL) {
 
 function _webform_tabledrag_expand_tabledrag(&$tabledrag, $component, $value) {
   if (count($tabledrag['#rows'])) {
-    $weight = range(0, count($tabledrag['#rows']) - 1, 1);
+    $weight = range(1, count($tabledrag['#rows']), 1);
+    $weight = array_combine($weight, $weight);
 
+    $default_weight = 1;
     foreach ($tabledrag['#rows'] as $key => $row) {
       $tabledrag[$key] = array(
         '#type' => 'select',
         '#options' => $weight,
-        '#default_value' => 0,
+        '#default_value' => $default_weight,
         '#title' => 'Weight',
         '#attributes' => array('class' => array("my-weight-{$component['form_key']}")),
       );
       if (!empty($value)) {
         $tabledrag[$key]['#default_value'] = $value[$key];
-        //put the list in the right order.
         $tabledrag[$key]['#weight'] = $value[$key];
       }
+      $default_weight++;
     }
   }
 }
