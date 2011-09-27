@@ -91,3 +91,16 @@ function _webform_form_builder_save_draggable_list($component, $form_element) {
 
   return $component;
 }
+
+function webform_draggable_list_formbuilder_form_builder_preview_alter(&$element, $form_type, $form_id) {
+  if ($element['#type'] == 'draggable_list') {
+    $default_weight = 1;
+    foreach ($element['#draggable_list_rows'] as $key => $row) {
+      $element[$key]['#value'] = $default_weight;
+      $element[$key]['#default_value'] = $default_weight;
+      $element[$key]['#weight'] = $default_weight;
+      $default_weight++;
+    }
+    uasort($element, 'element_sort');
+  }
+}
