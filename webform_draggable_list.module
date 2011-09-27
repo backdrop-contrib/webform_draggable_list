@@ -27,7 +27,7 @@ function webform_draggable_list_webform_component_info() {
  * Implements _webform_default_component().
  */
 function _webform_defaults_draggable_list() {
-  return array(
+  $defaults =  array(
     'name' => '',
     'form_key' => NULL,
     'mandatory' => 0,
@@ -43,6 +43,11 @@ function _webform_defaults_draggable_list() {
       'custom_row_keys' => 0,
     ),
   );
+  if (module_exists('webform_draggable_list_formbuilder')) {
+    $defaults['extra']['rows'] = _webform_select_options_to_text(array(t('Item 1'), t('Item 2'), t('Item 3')));
+  }
+
+  return $defaults;
 }
 
 /**
@@ -55,13 +60,12 @@ function _webform_render_draggable_list($component, $value = NULL, $filter = TRU
     '#weight' => $component['weight'],
     '#webform_component' => $component,
     '#description'   => $filter ? _webform_filter_descriptions($component['extra']['description']) : $component['extra']['description'],
-    '#default_value' => $filter ? _webform_filter_values($component['value']) : $component['value'],
     '#theme_wrappers' => array('webform_element'),
     '#theme' => array('draggable_list'),
-    '#prefix' => '<div class="webform-component-' . $component['type'] . '" id="webform-component-draggable-list-' . $component['form_key'] . '-wrapper">',
+    '#prefix' => '<div class="webform-component-draggable-list" id="webform-component-draggable-list-' . $component['form_key'] . '-wrapper">',
     '#wrapper_id' => 'webform-component-draggable-list-' . $component['form_key'] . '-wrapper',
     '#suffix' => '</div>',
-    '#rows' => _webform_select_options_from_text($component['extra']['rows']),
+    '#draggable_list_rows' => _webform_select_options_from_text($component['extra']['rows']),
     //set a marker for theme_draggable_list so the table is draggable
     '#draggable_list_draggable' => TRUE,
   );
@@ -72,12 +76,12 @@ function _webform_render_draggable_list($component, $value = NULL, $filter = TRU
 }
 
 function _webform_draggable_list_expand_draggable_list(&$draggable_list, $component, $value) {
-  if (count($draggable_list['#rows'])) {
-    $weight = range(1, count($draggable_list['#rows']), 1);
+  if (count($draggable_list['#draggable_list_rows'])) {
+    $weight = range(1, count($draggable_list['#draggable_list_rows']), 1);
     $weight = array_combine($weight, $weight);
 
     $default_weight = 1;
-    foreach ($draggable_list['#rows'] as $key => $row) {
+    foreach ($draggable_list['#draggable_list_rows'] as $key => $row) {
       $draggable_list[$key] = array(
         '#type' => 'select',
         '#options' => $weight,
@@ -113,7 +117,7 @@ function theme_draggable_list($variables) {
   if ($form['#webform_component']['extra']['hide_toggle']) {
     drupal_add_css("#{$form['#wrapper_id']} .tabledrag-toggle-weight-wrapper { display:none !important; }", array('type' => 'inline'));
   }
-  $rows = $form['#rows'];
+  $rows = $form['#draggable_list_rows'];
   $draggable = $form['#draggable_list_draggable'];
   $i = 0;
   $element_id = $variables['element']['#id'];
@@ -158,7 +162,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     '#post_render' => array('webform_element_wrapper'),
     '#webform_component' => $component,
     '#format' => $format,
-    '#rows' => _webform_select_options_from_text($component['extra']['rows']),
+    '#draggable_list_rows' => _webform_select_options_from_text($component['extra']['rows']),
   );
   if ($format == 'html') {
     $draggable_list +=  array(
@@ -174,7 +178,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     $items = array();
     if (!empty($value)) {
       foreach ($value as $key => $val) {
-        $items[] = "-{$draggable_list['#rows'][$key]}: {$val}";
+        $items[] = "-{$draggable_list['#draggable_list_rows'][$key]}: {$val}";
       }
     }
     $draggable_list += array(
