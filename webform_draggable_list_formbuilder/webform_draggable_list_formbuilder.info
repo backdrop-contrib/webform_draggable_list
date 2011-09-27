@@ -6,3 +6,4 @@ package = Webform
 
 dependencies[] = webform
 dependencies[] = form_builder_webform
+dependencies[] = webform_draggable_list
