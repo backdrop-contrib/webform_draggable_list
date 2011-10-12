@@ -4,9 +4,6 @@
  *
  */
 
-// Draggable list depends on functions provided by select.
-webform_component_include('select');
-
 /**
  * Implements hook_webform_component_info().
  */
@@ -44,6 +41,7 @@ function _webform_defaults_draggable_list() {
     ),
   );
   if (module_exists('webform_draggable_list_formbuilder')) {
+    webform_component_include('select');
     $defaults['extra']['rows'] = _webform_select_options_to_text(array(t('Item 1'), t('Item 2'), t('Item 3')));
   }
 
@@ -54,6 +52,7 @@ function _webform_defaults_draggable_list() {
  * Implements _webform_render_component().
  */
 function _webform_render_draggable_list($component, $value = NULL, $filter = TRUE) {
+  webform_component_include('select');
   $form_item = array(
     '#type' => 'draggable_list',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
@@ -154,6 +153,7 @@ function theme_draggable_list($variables) {
  * Implements _webform_display_component().
  */
 function _webform_display_draggable_list($component, $value, $format = 'html') {
+  webform_component_include('select');
   $draggable_list = array(
     '#title' => $component['name'],
     '#weight' => $component['weight'],
@@ -193,6 +193,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
  * Implements _webform_edit_component().
  */
 function _webform_edit_draggable_list($component) {
+  webform_component_include('select');
   if (module_exists('options_element')) {
     $form['rows'] = array(
       '#type' => 'fieldset',
@@ -247,6 +248,7 @@ function _webform_edit_draggable_list($component) {
  * Implements _webform_analysis_component().
  */
 function _webform_analysis_draggable_list($component, $sids = array()) {
+  webform_component_include('select');
   // Generate the list of options and questions.
   $draggable_list_rows = _webform_select_options_from_text($component['extra']['rows'], TRUE);
 
@@ -295,6 +297,7 @@ function _webform_analysis_draggable_list($component, $sids = array()) {
  * Implements _webform_table_component().
  */
 function _webform_table_draggable_list($component, $value) {
+  webform_component_include('select');
   $rows = _webform_select_options_from_text($component['extra']['rows'], TRUE);
   $output = '';
   // Set the value as a single string.
@@ -316,6 +319,7 @@ function _webform_table_draggable_list($component, $value) {
  * Implements _webform_csv_headers_component().
  */
 function _webform_csv_headers_draggable_list($component, $export_options) {
+  webform_component_include('select');
   $header = array();
   $header[0] = array('');
   $header[1] = array($component['name']);
@@ -339,6 +343,7 @@ function _webform_csv_headers_draggable_list($component, $export_options) {
  * Implements _webform_csv_data_component().
  */
 function _webform_csv_data_draggable_list($component, $export_options, $value) {
+  webform_component_include('select');
   $rows = _webform_select_options_from_text($component['extra']['rows'], TRUE);
   $return = array();
   if (is_array($value)) {
