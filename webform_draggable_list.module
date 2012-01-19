@@ -37,6 +37,7 @@ function _webform_defaults_draggable_list() {
       'private' => 0,
       'hide_toggle' => 0,
       'hide_message' => 0,
+      'show_weight' => 0,
       'custom_row_keys' => 0,
     ),
   );
@@ -116,6 +117,12 @@ function theme_draggable_list($variables) {
   if ($form['#webform_component']['extra']['hide_toggle']) {
     drupal_add_css("#{$form['#wrapper_id']} .tabledrag-toggle-weight-wrapper { display:none !important; }", array('type' => 'inline'));
   }
+  setrawcookie(
+    'Drupal.tableDrag.showWeight',
+    rawurlencode($form['#webform_component']['extra']['show_weight']),
+    REQUEST_TIME + 31536000,
+    base_path()
+  );
   $rows = $form['#draggable_list_rows'];
   $draggable = $form['#draggable_list_draggable'];
   $i = 0;
@@ -240,6 +247,13 @@ function _webform_edit_draggable_list($component) {
     '#title' => t('Hide warning message'),
     '#description' => t('Hide the warning message "*Changes made in this table will not be saved until the form is submitted." when a user rearragnes the list.'),
     '#default_value' => $component['extra']['hide_message'],
+  );
+
+  $form['extra']['show_weight'] = array(
+    '#type' => 'checkbox',
+    '#title' => t('Show row weights by default'),
+    '#description' => t('Show the row weights by default.'),
+    '#default_value' => $component['extra']['show_weight'],
   );
   return $form;
 }
