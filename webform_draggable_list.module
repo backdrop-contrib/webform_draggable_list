@@ -170,6 +170,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     '#webform_component' => $component,
     '#format' => $format,
     '#draggable_list_rows' => _webform_select_options_from_text($component['extra']['rows']),
+    '#wrapper_id' => 'webform-component-draggable-list-' . $component['form_key'] . '-wrapper',
   );
   if ($format == 'html') {
     $draggable_list +=  array(
