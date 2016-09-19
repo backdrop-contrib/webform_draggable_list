@@ -71,6 +71,7 @@ function _webform_render_draggable_list($component, $value = NULL, $filter = TRU
   );
 
   _webform_draggable_list_expand_draggable_list($form_item, $component, $value);
+  drupal_alter('draggable_list', $form_item, $component, $value);
 
   return $form_item;
 }
@@ -180,6 +181,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     );
 
     _webform_draggable_list_expand_draggable_list($draggable_list, $component, $value);
+    drupal_alter('draggable_list', $draggable_list, $component, $value);
   }
   else {
     asort($value, SORT_NUMERIC);
