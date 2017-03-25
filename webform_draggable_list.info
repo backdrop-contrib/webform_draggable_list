@@ -1,7 +1,7 @@
-; $Id: 
 name = Webform Draggable List
 description = Draggable List element for the Webform module. Allow users to order a list with drag and drop and save the order.
-core = 7.x
 package = Webform
+type = module
+backdrop = 1.x
 
 dependencies[] = webform
