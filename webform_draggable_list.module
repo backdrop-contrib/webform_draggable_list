@@ -167,7 +167,6 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     '#weight' => $component['weight'],
     '#description'   => _webform_filter_descriptions($component['extra']['description']),
     '#theme_wrappers' => $format == 'html' ? array('webform_element') : array('webform_element_text'),
-    '#post_render' => array('webform_element_wrapper'),
     '#webform_component' => $component,
     '#format' => $format,
     '#draggable_list_rows' => _webform_select_options_from_text($component['extra']['rows']),
