@@ -71,7 +71,7 @@ function _webform_render_draggable_list($component, $value = NULL, $filter = TRU
   );
 
   _webform_draggable_list_expand_draggable_list($form_item, $component, $value);
-  drupal_alter('draggable_list', $form_item, $component, $value);
+  backdrop_alter('draggable_list', $form_item, $component, $value);
 
   return $form_item;
 }
@@ -113,13 +113,13 @@ function _webform_theme_draggable_list() {
 function theme_draggable_list($variables) {
   $form = $variables['element'];
   if ($form['#webform_component']['extra']['hide_message']) {
-    drupal_add_css("#{$form['#wrapper_id']} .warning { display:none !important; }", array('type' => 'inline'));
+    backdrop_add_css("#{$form['#wrapper_id']} .warning { display:none !important; }", array('type' => 'inline'));
   }
   if ($form['#webform_component']['extra']['hide_toggle']) {
-    drupal_add_css("#{$form['#wrapper_id']} .tabledrag-toggle-weight-wrapper { display:none !important; }", array('type' => 'inline'));
+    backdrop_add_css("#{$form['#wrapper_id']} .tabledrag-toggle-weight-wrapper { display:none !important; }", array('type' => 'inline'));
   }
   setrawcookie(
-    'Drupal.tableDrag.showWeight',
+    'Backdrop.tableDrag.showWeight',
     rawurlencode($form['#webform_component']['extra']['show_weight']),
     REQUEST_TIME + 31536000,
     base_path()
@@ -137,23 +137,23 @@ function theme_draggable_list($variables) {
         '#markup' => $row,
       ),
     );
-    $this_row[] = array('data' => drupal_render($item));
+    $this_row[] = array('data' => backdrop_render($item));
     if ($draggable) {
-      $this_row[] = array('data' => drupal_render($form[$key]));
+      $this_row[] = array('data' => backdrop_render($form[$key]));
     }
 
     $table_rows[] = array('data' => $this_row, 'class' => array('draggable'));
     $i++;
   }
   if ($draggable) {
-    drupal_add_tabledrag($element_id, 'order', 'sibling', "my-weight-{$variables['element']['#webform_component']['form_key']}");
+    backdrop_add_tabledrag($element_id, 'order', 'sibling', "my-weight-{$variables['element']['#webform_component']['form_key']}");
   }
   $form = array(
     '#type' => 'markup',
     '#markup' => theme('table', array('rows' => $table_rows, 'attributes' => array('id' => $element_id))),
     '#weight' => '1',
   );
-  $output = drupal_render($form);
+  $output = backdrop_render($form);
   return $output;
 }
 
@@ -180,7 +180,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     );
 
     _webform_draggable_list_expand_draggable_list($draggable_list, $component, $value);
-    drupal_alter('draggable_list', $draggable_list, $component, $value);
+    backdrop_alter('draggable_list', $draggable_list, $component, $value);
   }
   else {
     asort($value, SORT_NUMERIC);
