@@ -183,9 +183,9 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     backdrop_alter('draggable_list', $draggable_list, $component, $value);
   }
   else {
-    asort($value, SORT_NUMERIC);
     $items = array();
     if (!empty($value)) {
+      asort($value, SORT_NUMERIC);
       foreach ($value as $key => $val) {
         $items[] = "-{$draggable_list['#draggable_list_rows'][$key]}: {$val}";
       }
