@@ -26,6 +26,7 @@ Current Maintainers
 -------------------
 
 - Cathy Theys (https://github.com/YesCT)
+- Jen Lampton (https://github.com/jenlampton)
 - Seeking additional maintainers
 
 Credits
