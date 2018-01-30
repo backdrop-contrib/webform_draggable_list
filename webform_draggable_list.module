@@ -54,7 +54,7 @@ function _webform_defaults_draggable_list() {
  */
 function _webform_render_draggable_list($component, $value = NULL, $filter = TRUE) {
   webform_component_include('select');
-  $form_item = array(
+  $draggable_list = array(
     '#type' => 'draggable_list',
     '#title' => $filter ? _webform_filter_xss($component['name']) : $component['name'],
     '#weight' => $component['weight'],
@@ -70,10 +70,10 @@ function _webform_render_draggable_list($component, $value = NULL, $filter = TRU
     '#draggable_list_draggable' => TRUE,
   );
 
-  _webform_draggable_list_expand_draggable_list($form_item, $component, $value);
-  backdrop_alter('draggable_list', $form_item, $component, $value);
+  _webform_draggable_list_expand_draggable_list($draggable_list, $component, $value);
+  backdrop_alter('draggable_list', $draggable_list, $component, $value);
 
-  return $form_item;
+  return $draggable_list;
 }
 
 function _webform_draggable_list_expand_draggable_list(&$draggable_list, $component, $value) {
@@ -87,10 +87,11 @@ function _webform_draggable_list_expand_draggable_list(&$draggable_list, $compon
         '#type' => 'select',
         '#options' => $weight,
         '#default_value' => $default_weight,
+        '#weight' => $default_weight,
         '#title' => 'Weight',
         '#attributes' => array('class' => array("my-weight-{$component['form_key']}")),
       );
-      if (!empty($value)) {
+      if (!empty($value) && isset($value[$key]) && $value[$key] != '1000') {
         $draggable_list[$key]['#default_value'] = $value[$key];
         $draggable_list[$key]['#weight'] = $value[$key];
       }
@@ -172,6 +173,7 @@ function _webform_display_draggable_list($component, $value, $format = 'html') {
     '#draggable_list_rows' => _webform_select_options_from_text($component['extra']['rows']),
     '#wrapper_id' => 'webform-component-draggable-list-' . $component['form_key'] . '-wrapper',
   );
+
   if ($format == 'html') {
     $draggable_list +=  array(
       //set a marker for theme_draggable_list so the display isn't draggable
